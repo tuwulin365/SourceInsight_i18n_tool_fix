@@ -106,6 +106,59 @@ int FixExe(unsigned char *pExeBuf, StringPair *pStringPair)
     return 0;
 }
 
+//处理转义字符
+static int _StringTranslate(unsigned char *pString, int iLen)
+{
+    int iResLen = iLen;
+
+    for (int i = 0; i < iResLen-1; i++)
+    {
+        if (pString[i] == '\\')
+        {
+            unsigned char ucTmp = 0;
+
+            switch (pString[i+1])
+            {
+                case '\\':
+                {
+                    ucTmp = pString[i+1];
+                    break;
+                }
+                case 'r':
+                {
+                    ucTmp = '\r';
+                    break;
+                }
+                case 'n':
+                {
+                    ucTmp = '\n';
+                    break;
+                }
+                default:
+                {
+                }
+            }
+
+            if (ucTmp)
+            {
+                pString[i] = ucTmp;
+                memmove(pString + i + 1, pString + i +2, iResLen - i - 2);
+                iResLen--;
+            }
+        }
+    }
+
+    memset(pString + iResLen, 0, iLen - iResLen);
+
+    return iResLen;
+}
+int StringTranslate(StringPair *pPair)
+{
+    pPair->iInsertStrLen = _StringTranslate(pPair->ucInsertStr, pPair->iInsertStrLen);
+
+    return 0;
+}
+
 int main(int iCnt, char *pParam[])
 {
     FILE *pfLngFile;
@@ -120,7 +173,7 @@ int main(int iCnt, char *pParam[])
     char czNewFileName[128+8];
     char czOldFileName[128];
 
-    printf("sourceinsight4 i18n fix tool V1.00\ntuwulin365@126.com  2021-05-27\n");
+    printf("sourceinsight4 i18n fix tool V1.01\ntuwulin365@126.com  2021-12-25\n");
     printf("usage: i18n_fix.exe si.exe str_list.lng\n\n");
 
     if (iCnt != 3)
@@ -164,6 +217,8 @@ int main(int iCnt, char *pParam[])
         pTmpOut = GetStringPair(pTmpIn, i, &stString);
         if (pTmpOut)
         {
+            StringTranslate(&stString);
+
             i = i - (pTmpOut-pTmpIn);
             pTmpIn = pTmpOut;
             printf("%s %d\n", stString.ucInsertStr, stString.iInsertStrLen);
