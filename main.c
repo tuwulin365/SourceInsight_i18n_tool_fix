@@ -66,9 +66,12 @@ unsigned char* GetStringPair(unsigned char *pBuf, int iInLen, StringPair *pstStr
     return pTmp ? pTmp : NULL;
 }
 
+//Êµ¼ÊÆ«ÒÆµØÖ· ÐéÄâÆ«ÒÆµØÖ·
 //2c0000  008E6F00
 #define EXE_STR_INSERT_START_ADDR   0x002C0000
 #define EXE_CODE_START              0x006F8E00
+unsigned int uRealStrInsertAddr;
+unsigned int uVirtualStartAddr;
 int FixExe(unsigned char *pExeBuf, StringPair *pStringPair)
 {
     int iInsertCnt;
@@ -93,8 +96,8 @@ int FixExe(unsigned char *pExeBuf, StringPair *pStringPair)
     }
     printf("\n\n");
 
-    memcpy(pExeBuf + EXE_STR_INSERT_START_ADDR + pStringPair->iInsertCnt * 16, pStringPair->ucInsertStr, pStringPair->iInsertStrLen);
-    uTmp = EXE_CODE_START + pStringPair->iInsertCnt * 16;
+    memcpy(pExeBuf + uRealStrInsertAddr + pStringPair->iInsertCnt * 16, pStringPair->ucInsertStr, pStringPair->iInsertStrLen);
+    uTmp = uVirtualStartAddr + pStringPair->iInsertCnt * 16;
     for (int i = 0; i < iInsertCnt; i++)
     {
         memcpy(pExeBuf + uInsertAddr[i],
@@ -173,14 +176,32 @@ int main(int iCnt, char *pParam[])
     char czNewFileName[128+8];
     char czOldFileName[128];
 
-    printf("sourceinsight4 i18n fix tool V1.01\ntuwulin365@126.com  2021-12-25\n");
-    printf("usage: i18n_fix.exe si.exe str_list.lng\n\n");
+    printf("sourceinsight4 i18n fix tool V1.02\ntuwulin365@126.com  2022-01-09\n");
+    printf("usage: i18n_fix.exe si.exe str_list.lng\n");
+    printf("usage: i18n_fix.exe si.exe str_list.lng real_addr virtual_addr\n\n");
 
-    if (iCnt != 3)
+    if (iCnt == 3)
+    {
+        uRealStrInsertAddr = EXE_STR_INSERT_START_ADDR;
+        uVirtualStartAddr = EXE_CODE_START;
+    }
+    else if (iCnt == 5)
+    {
+        sscanf(pParam[3], "%x", &uRealStrInsertAddr);
+        sscanf(pParam[4], "%x", &uVirtualStartAddr);
+        if ((uRealStrInsertAddr == 0) || (uVirtualStartAddr == 0))
+        {
+            printf("addr error.\n");
+            return -1;
+        }
+    }
+    else
     {
         printf("param err.\n");
         return -1;
     }
+
+    printf("exe: %s\nlng: %s\nreal addr: 0x%08x\nvirtual addr: 0x%08x\n\n", pParam[1], pParam[2], uRealStrInsertAddr, uVirtualStartAddr);
 
     pfLngFile = fopen(pParam[2], "rb");
     if (!pfLngFile)
