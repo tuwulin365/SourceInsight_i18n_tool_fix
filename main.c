@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "windows.h"
 
 typedef struct
 {
@@ -72,6 +73,7 @@ unsigned char* GetStringPair(unsigned char *pBuf, int iInLen, StringPair *pstStr
 #define EXE_CODE_START              0x006F8E00
 unsigned int uRealStrInsertAddr;
 unsigned int uVirtualStartAddr;
+unsigned int uIsUnicode = 0;
 int FixExe(unsigned char *pExeBuf, StringPair *pStringPair)
 {
     int iInsertCnt;
@@ -96,7 +98,17 @@ int FixExe(unsigned char *pExeBuf, StringPair *pStringPair)
     }
     printf("\n\n");
 
-    memcpy(pExeBuf + uRealStrInsertAddr + pStringPair->iInsertCnt * 16, pStringPair->ucInsertStr, pStringPair->iInsertStrLen);
+    if (uIsUnicode)
+    {
+        WCHAR wcBuf[16] = {0};
+        MultiByteToWideChar(CP_UTF8, 0, (const char*)pStringPair->ucInsertStr, pStringPair->iInsertStrLen, wcBuf, sizeof(wcBuf)-2);
+        memcpy(pExeBuf + uRealStrInsertAddr + pStringPair->iInsertCnt * 16, wcBuf, 16);
+    }
+    else
+    {
+        memcpy(pExeBuf + uRealStrInsertAddr + pStringPair->iInsertCnt * 16, pStringPair->ucInsertStr, pStringPair->iInsertStrLen);
+    }
+
     uTmp = uVirtualStartAddr + pStringPair->iInsertCnt * 16;
     for (int i = 0; i < iInsertCnt; i++)
     {
@@ -176,16 +188,17 @@ int main(int iCnt, char *pParam[])
     char czNewFileName[128+8];
     char czOldFileName[128];
 
-    printf("sourceinsight4 i18n fix tool V1.02\ntuwulin365@126.com  2022-01-09\n");
+    printf("sourceinsight4 i18n fix tool V1.03\ntuwulin365@126.com  2022-05-08\n");
     printf("usage: i18n_fix.exe si.exe str_list.lng\n");
-    printf("usage: i18n_fix.exe si.exe str_list.lng real_addr virtual_addr\n\n");
+    printf("usage: i18n_fix.exe si.exe str_list.lng real_addr virtual_addr\n");
+    printf("usage: i18n_fix.exe si.exe str_list.lng real_addr virtual_addr unicode\n\n");
 
     if (iCnt == 3)
     {
         uRealStrInsertAddr = EXE_STR_INSERT_START_ADDR;
         uVirtualStartAddr = EXE_CODE_START;
     }
-    else if (iCnt == 5)
+    else if ((iCnt == 5) || (iCnt == 6))
     {
         sscanf(pParam[3], "%x", &uRealStrInsertAddr);
         sscanf(pParam[4], "%x", &uVirtualStartAddr);
@@ -193,6 +206,14 @@ int main(int iCnt, char *pParam[])
         {
             printf("addr error.\n");
             return -1;
+        }
+
+        if (iCnt == 6)
+        {
+            if (0 == strcmp(pParam[5], "unicode"))
+            {
+                uIsUnicode = 1;
+            }
         }
     }
     else

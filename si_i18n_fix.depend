@@ -1,6 +1,7 @@
 # depslib dependency file v1.0
-1641727190 source:d:\svn\si_i18n_fix\main.c
+1651979251 source:d:\svn\si_i18n_fix\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
+	"windows.h"
 
