@@ -188,7 +188,7 @@ int main(int iCnt, char *pParam[])
     char czNewFileName[128+8];
     char czOldFileName[128];
 
-    printf("sourceinsight4 i18n fix tool V1.03\ntuwulin365@126.com  2022-05-08\n");
+    printf("sourceinsight4 i18n fix tool V1.04\ntuwulin365@126.com  2023-06-10\n");
     printf("usage: i18n_fix.exe si.exe str_list.lng\n");
     printf("usage: i18n_fix.exe si.exe str_list.lng real_addr virtual_addr\n");
     printf("usage: i18n_fix.exe si.exe str_list.lng real_addr virtual_addr unicode\n\n");
@@ -265,6 +265,12 @@ int main(int iCnt, char *pParam[])
             pTmpIn = pTmpOut;
             printf("%s %d\n", stString.ucInsertStr, stString.iInsertStrLen);
             printf("%s %d\n", stString.ucInsertAddr, stString.iInsertAddrStrLen);
+
+            if (stString.iInsertStrLen > (uIsUnicode ? 21 : 15))
+            {
+                printf("error, text too long: %s\n", stString.ucInsertStr);
+                exit(-2);
+            }
 
             if (FixExe(pucExe, &stString))
             {
