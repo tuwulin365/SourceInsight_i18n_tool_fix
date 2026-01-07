@@ -193,7 +193,7 @@ int main(int iCnt, char *pParam[])
     char czNewFileName[128+8];
     char czOldFileName[128];
 
-    printf("sourceinsight4 i18n fix tool V1.04\ntuwulin365@126.com  2023-06-10\n");
+    printf("sourceinsight4 i18n fix tool V1.05\ntuwulin365@126.com  2026-01-07\n");
     printf("usage: i18n_fix.exe si.exe str_list.lng\n");
     printf("usage: i18n_fix.exe si.exe str_list.lng real_addr virtual_addr\n");
     printf("usage: i18n_fix.exe si.exe str_list.lng real_addr virtual_addr unicode\n\n");
