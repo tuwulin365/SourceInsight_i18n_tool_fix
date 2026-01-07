@@ -149,6 +149,11 @@ static int _StringTranslate(unsigned char *pString, int iLen)
                     ucTmp = '\n';
                     break;
                 }
+                case 't':
+                {
+                    ucTmp = '\t';
+                    break;
+                }
                 default:
                 {
                 }
